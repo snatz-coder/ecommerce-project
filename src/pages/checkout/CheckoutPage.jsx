@@ -5,9 +5,19 @@ import dayjs from "dayjs";
 import "./checkout-header.css";
 import "./CheckoutPage.css";
 
-export function CheckoutPage({ cart }) {
+export function CheckoutPage({ cart, loadCart }) {
   const [deliveryOptions, setDeliveryOptions] = useState([]);
   const [paymentSummary, setPaymentSummary] = useState(null);
+
+  const updateDeliveryOption = async (productId, deliveryOptionId) => {
+    await axios.put(`/api/cart-items/${productId}`, { deliveryOptionId: deliveryOptionId });
+    await loadCart();
+  };
+
+  const deleteProduct = async(productId) => {
+    await axios.delete(`/api/cart-items/${productId}`);
+    await loadCart();
+  }
 
   useEffect(() => {
     const fetchData = async () => {
@@ -20,7 +30,7 @@ export function CheckoutPage({ cart }) {
       setPaymentSummary(response.data);
     };
     fetchData();
-  }, []);
+  }, [cart]);
 
   return (
     <>
@@ -93,7 +103,7 @@ export function CheckoutPage({ cart }) {
                           <span className="update-quantity-link link-primary">
                             Update
                           </span>
-                          <span className="delete-quantity-link link-primary">
+                          <span className="delete-quantity-link link-primary" onClick={() => deleteProduct(cartItem.productId)}>
                             Delete
                           </span>
                         </div>
@@ -110,6 +120,7 @@ export function CheckoutPage({ cart }) {
                             <div
                               key={deliveryOptionsItem.id}
                               className="delivery-option"
+                              onClick={() => updateDeliveryOption(cartItem.productId, deliveryOptionsItem.id)}
                             >
                               <input
                                 type="radio"
